@@ -1,34 +1,47 @@
-import { Controller, Get, Post, Body, Param, Patch, Delete } from '@nestjs/common';
+import { Controller, Post, Get, Patch, Delete, Param, Body, UseGuards, Request } from '@nestjs/common';
 import { ArticlesService } from './articles.service';
-import { CreateArticleDto } from '../dto/articles.dto';
+import { CreateArticleDto ,UpdateArticleDto } from '../dto/articles.dto';
+import { JwtAuthGuard } from 'src/core/guards/jwt-auth.guard';
+
 
 @Controller('articles')
+@UseGuards(JwtAuthGuard)
 export class ArticlesController {
-  constructor(private readonly articlesService: ArticlesService) {}
+    constructor(private readonly articlesService: ArticlesService) {}
 
-  @Post()
-  async createArticle(@Body() createArticleDto: CreateArticleDto) {
-    return await this.articlesService.createArticle(createArticleDto);
-  }
+    
+    @Post()
+    async create(@Body() createArticleDto: CreateArticleDto, @Request() req) {
+        createArticleDto.userId = req.user.userId; 
+        return this.articlesService.create(createArticleDto);
+    }
 
-  @Get()
-  async findAllArticles() {
-    return await this.articlesService.findAllArticles();
-  }
+    @Get()
+    async findAll() {
+        return this.articlesService.findAll();
+    }
 
-  @Get(':id')
-  async findArticleById(@Param('id') id: string) {
-    return await this.articlesService.findArticleById(id);
-  }
+    @Get(':id')
+    async findOne(@Param('id') id: string) {
+        return this.articlesService.findOne(id);
+    }
 
-  @Patch(':id')
-  async updateArticle(@Param('id') id: string, @Body() updateArticleDto: CreateArticleDto) {
-    return await this.articlesService.updateArticle(id, updateArticleDto);
-  }
+    
+    @Patch(':id')
+    async update(@Param('id') id: string, @Body() updateArticleDto: UpdateArticleDto, @Request() req) {
+        updateArticleDto.userId = req.user.userId; 
+        return this.articlesService.update(id, updateArticleDto);
+    }
 
-  @Delete(':id')
-  async deleteArticle(@Param('id') id: string) {
-    await this.articlesService.deleteArticle(id);
-    return { message: 'Article deleted successfully' };
-  }
+    
+    @Delete(':id')
+    async delete(@Param('id') id: string) {
+        return this.articlesService.delete(id);
+    }
+
+    
+    @Get('user/:userId')
+    async findArticlesByUser(@Param('userId') userId: string) {
+        return this.articlesService.findArticlesByUser(userId);
+    }
 }

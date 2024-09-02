@@ -14,26 +14,23 @@ export class SigninService {
         private jwtService: JwtService
     ) {}
 
+    async signIn(acc: signInDto) {
+        const user = await this.userModel.findOne({ email: acc.email });
 
-    signIn = async(acc:signInDto) => {
-
-       let emailExsist = await this.userModel.findOne({email: acc.email})
-
-       if(emailExsist){
-
-
-        const match = await bcrypt.compare(acc.password,emailExsist.password)
-        if(match){
-            let token = this.jwtService.sign({name:User.name},{secret:'stitsh'}) 
-         return {message:'Login Successfully',token}
+        if (user) {
+            const match = await bcrypt.compare(acc.password, user.password);
+            if (match) {
+                
+                const token = this.jwtService.sign(
+                    { userId: user._id, email: user.email },
+                    { secret: 'your-secret-key', expiresIn: '1h' }
+                );
+                return { message: 'Login Successfully', token };
+            } else {
+                throw new HttpException('Wrong Password', HttpStatus.BAD_REQUEST);
+            }
+        } else {
+            throw new HttpException('Wrong Email', HttpStatus.BAD_REQUEST);
         }
-        else{
-            throw new HttpException("Wrong Password",HttpStatus.BAD_REQUEST)
-        }
-       }
-
-       else {
-        throw new HttpException("Wrong Email",HttpStatus.BAD_REQUEST) 
-       }
     }
 }

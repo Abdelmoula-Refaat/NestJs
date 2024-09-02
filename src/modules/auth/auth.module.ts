@@ -9,8 +9,9 @@ import { JwtService } from '@nestjs/jwt';
 
 @Module({
     imports: [MongooseModule.forFeature([{ name: User.name, schema: UserSchema }])],
-    controllers:[SigninController,SignupController],
-    providers:[SigninService,SignupService,JwtService]
+    controllers: [SigninController, SignupController],
+    providers: [SigninService, SignupService, JwtService],
+    exports: [JwtService] 
 })
 export class AuthModule {}
 
